@@ -94,11 +94,48 @@ class SATInstance:
         print(graph)
         if graph.has_contradiction():
             self.comments += "c twosat unsatisfiable \n"
+            self.sat = False
             return False
         else:
             self.comments += "c twosat satisfiable \n"
+            self.sat = True
             self.clauses = []
             return True
+
+    def find_pures(self):
+        pures = set()
+        not_pures = set()
+        for clause in self.clauses:
+            for literal in clause:
+                if -literal in pures:
+                    pures.remove(-literal)
+                    not_pures.add(abs(literal))
+                elif abs(literal) not in not_pures:
+                    pures.add(literal)
+        return pures
+
+    def stand(self, assignment):
+        if self.is_twosat(): 
+            self.comments += "c running 2sat algorithm \n"
+            self.twosat()
+        for pure in self.find_pures():
+            assignment[abs(pure) - 1] = False if pure < 0 else True
+            self.comments += f"c pure literal {pure} set to {assignment[abs(pure) - 1]} \n"
+        for clause in self.clauses:
+            if len(clause) == 1:
+                assignment[abs(clause[0])-1] = False if clause[0] < 0 else True 
+                self.comments += f"c unit clause {clause[0]} set to {assignment[abs(clause[0])-1]} \n"
+        temp_clauses = self.clauses.copy()
+        check = self.check(assignment)
+        print("\nmidway:")
+        print(self)
+        if check == True: self.comments += "c stand found true \n"
+        elif check == False: self.comments += "c stand found false \n"
+        elif self.clauses != temp_clauses:
+            self.comments += "c rerunning stand \n"
+            self.stand(assignment)
+        else: self.comments += "c stand did not simplify \n"
+        return self.clauses
 
 class sat_graph:
     def __init__(self):
