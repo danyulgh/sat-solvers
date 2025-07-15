@@ -15,7 +15,7 @@ class SATInstance:
         if self.sat == True: return self.comments
         if self.sat == False: return self.comments
         output = self.comments
-        output += f"p cnf {len(self.assignment)} {len(self.clauses)} \n"
+        # output += f"p cnf {len(self.assignment)} {len(self.clauses)} \n"
         for clause in self.clauses:
             output += f"{" ".join(str(literal) for literal in clause)} 0 \n"
         output += "%\n0"
@@ -90,10 +90,15 @@ class SATInstance:
         graph = sat_graph()
         for clause in self.clauses:
             graph.add_clause(clause)
+        print("produced directed graph")
+        print(graph)
         if graph.has_contradiction():
-            print("2-sat unsat")
+            self.comments += "c twosat unsatisfiable \n"
+            return False
         else:
-            print("2-sat sat")
+            self.comments += "c twosat satisfiable \n"
+            self.clauses = []
+            return True
 
 class sat_graph:
     def __init__(self):
@@ -133,11 +138,12 @@ class sat_graph:
                 self.traverse(visited, node, stack, scc)
 
     def traverse(self, visited, node, stack, scc):
-        visited.append(node)
-        for neighbor in self.graph[node]:
-            self.traverse(visited, neighbor, stack, scc)
-        stack.append(node)
-        scc.append(node)
+        if node not in visited:
+            visited.append(node)
+            for neighbor in self.graph[node]:
+                self.traverse(visited, neighbor, stack, scc)
+            stack.append(node)
+            scc.append(node)
         return visited
 
     def strongly_connected_components(self):

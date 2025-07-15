@@ -19,6 +19,7 @@ def randomize_assignment(assignment):
 #check testing w/ random assignments
 # with open(f"tests/uf20-91/{random.choice(os.listdir("tests/uf20-91"))}", "r") as file:
 #     instance = SATInstance.instance_from_file(SATInstance, file)
+#     print("original instance:")
 #     print(instance)
 #     print()
 
@@ -32,16 +33,11 @@ def randomize_assignment(assignment):
 #     print(instance)
 
 #two sat testing
-with open(f"tests/uf20-91/{random.choice(os.listdir("tests/uf20-91"))}", "r") as file:
+with open(f"tests/twosats/{random.choice(os.listdir("tests/twosats"))}", "r") as file:
     instance = SATInstance.instance_from_file(SATInstance, file)
+    print("original instance:")
     print(instance)
     print()
 
-    z = instance.assignment.copy()
-    randomize_assignment(z)
-    print_assignment(z)
-
-    print(f"check result: {instance.check(z)}")
-    print()
-
+    print(f"twosat results: {instance.twosat()}")
     print(instance)
