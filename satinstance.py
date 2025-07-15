@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 class SATInstance:
     #we will be given a list of clauses
     #each clause is a list of literals
@@ -9,8 +11,9 @@ class SATInstance:
         self.assignment = []
 
     def __str__(self):
-        if self.sat == True: return "satisfied"
-        if self.sat == False: return "partial assignment led to unsat"
+        
+        if self.sat == True: return self.comments
+        if self.sat == False: return self.comments
         output = self.comments
         output += f"p cnf {len(self.assignment)} {len(self.clauses)} \n"
         for clause in self.clauses:
@@ -49,11 +52,11 @@ class SATInstance:
     def check(self, assignment):
         self.assignment = assignment.copy()
         new_clauses = []
-        for clause in self.clauses:
+        for i, clause in enumerate(self.clauses):
             new_clause = SATInstance.check_clause(clause, assignment)
             if new_clause == True: continue
             elif new_clause == False:
-                self.comments += "c current partial assignment caused unsat\n"
+                self.comments += f"c clause {i+1} ({clause}) was set to false, causing unsat w/ current assignment\n"
                 self.sat = False
                 return False
             else: new_clauses.append(new_clause)
@@ -77,3 +80,84 @@ class SATInstance:
             if expression: return True
         if not expression and not new_clause: return False
         return new_clause
+    
+    def is_twosat(self):
+        for clause in self.clauses:
+            if len(clause) > 2: return False
+        return True
+
+    def twosat(self):
+        graph = sat_graph()
+        for clause in self.clauses:
+            graph.add_clause(clause)
+        if graph.has_contradiction():
+            print("2-sat unsat")
+        else:
+            print("2-sat sat")
+
+class sat_graph:
+    def __init__(self):
+        self.graph = defaultdict(set)
+        self.nodes = set()
+    
+    def __str__(self):
+        edges = ""
+        for node in self.graph:
+            for neighbor in self.graph[node]:
+                edges += f"({node}, {neighbor})\n"
+        return edges
+        
+    def addEdge(self, u, v):
+        self.graph[u].add(v)
+        self.nodes.add(u)
+        self.nodes.add(v)
+    
+    def add_clause(self, clause):
+        if len(clause) == 2:
+            self.addEdge(-clause[0], clause[1])
+            self.addEdge(-clause[1], clause[0])
+        else:
+            self.addEdge(-clause[0], clause[0])
+    
+    def has_contradiction(self):
+        for component in self.strongly_connected_components():
+            literals = set()
+            for literal in component:
+                if -literal in literals: return True
+                literals.add(literal)
+        return False
+
+    def DFS(self, visited, stack, scc):
+        for node in self.nodes:
+            if node not in visited:
+                self.traverse(visited, node, stack, scc)
+
+    def traverse(self, visited, node, stack, scc):
+        visited.append(node)
+        for neighbor in self.graph[node]:
+            self.traverse(visited, neighbor, stack, scc)
+        stack.append(node)
+        scc.append(node)
+        return visited
+
+    def strongly_connected_components(self):
+        stack = []
+        sccs = []
+        self.DFS([], stack, [])
+        transposed = self.transpose_graph()
+        visited = []
+        while stack:
+            node = stack.pop()
+            if node not in visited:
+                scc = []
+                scc.append(node)
+                transposed.traverse(visited, node, [], scc)
+                sccs.append(scc)
+        return sccs
+
+    def transpose_graph(self):
+        transposed = sat_graph()
+        for node in self.graph:
+            for neighbor in self.graph[node]:
+                transposed.addEdge(neighbor, node)
+        return transposed
