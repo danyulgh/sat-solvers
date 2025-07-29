@@ -136,6 +136,13 @@ class SATInstance:
             for literal in clause:
                 counter[abs(literal)] += 1
         return counter.most_common()[0][0]
+    
+    def least_frequent(self):
+        counter = Counter()
+        for clause in self.clauses:
+            for literal in clause:
+                counter[abs(literal)] += 1
+        return counter.most_common()[-1][0]
 
     def most_spread(self):
         counter = Counter()
