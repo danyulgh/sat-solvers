@@ -2,6 +2,7 @@ from satinstance import SATInstance
 import random
 import time 
 import os
+
 def print_assignment(z):
     for i, bool in enumerate(z):
         if bool == None: continue
@@ -18,8 +19,8 @@ def randomize_assignment(assignment):
 directories = ["uf20-91", "uf50-218", "uuf50-218/UUF50.218.1000", "flat50-115", "pigeon-hole"]
 funcs  = [SATInstance.most_frequent, SATInstance.most_spread]
 for i in range(30):
-    # directory = random.choice(directories)
-    directory = "pigeon-hole"
+    directory = random.choice(directories)
+    # directory = "pigeon-hole"
     test = random.choice(os.listdir(f"tests/{directory}"))
     func = random.choice(funcs)
     with open(f"tests/{directory}/{test}", "r") as file:
