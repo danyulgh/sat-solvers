@@ -2,36 +2,28 @@ from collections import defaultdict
 from collections import Counter
 
 class SATInstance:
-    #we will be given a list of clauses
-    #each clause is a list of literals
-    #n total literals
     def __init__(self):
-        self.variables = []
-        self.variable_table = dict()
+        self.variables = [] #list of variables
+        self.variable_table = dict() #assignment of variable to position in variables
         self.clauses = []
     
     def instance_from_file(cls, file):
         #construct instance
         instance = cls()
-        #parse lines
-        for line in file:
+        for line in file: # parse lines
             line = line.strip()
-            #comments
-            if line.startswith("c"): continue
-            #info
+            if line.startswith("c"): continue #skip comments 
             if line.startswith("p"): continue
-            #end
             if line.startswith("%"): break
-            #clauses
             instance.add_clause(line)
         return instance
     
     def add_clause(self, line):
         clause = []
         for literal in line.split():
-            if literal == "0": break #in used format, 0 is the end of a clause
+            if literal == "0": break #0 is the end of a clause
             clause.append(int(literal)) #add literal to clause
-            variable = abs(int(literal))
+            variable = abs(int(literal)) #get abs of literal as a variable
             if variable not in self.variable_table: #add variable to table
                 self.variable_table[variable] = len(self.variables)
                 self.variables.append(variable)
@@ -41,13 +33,10 @@ class SATInstance:
         #updating clauses based on assignment 
         new_clauses = []
         for i, clause in enumerate(self.clauses):
-            new_clause = self.check_clause(clause, assignment)
-            #clause is true, so don't add it to new clauses
-            if new_clause == True: continue
-            #clause was set to false so unsat
-            elif new_clause == False: return False
-            #clause cannot be simplified as true or false, so add it to new clauses
-            new_clauses.append(tuple(new_clause))
+            new_clause = self.check_clause(clause, assignment) #update clause with assignment            
+            if new_clause == True: continue #clause is true, so don't add it to new clauses
+            elif new_clause == False: return False #clause is false so unsat
+            new_clauses.append(tuple(new_clause)) #clause was not simplified so add it back
         self.clauses = new_clauses
         #if no new clauses left, then were satisfied
         if len(new_clauses) == 0: return True
