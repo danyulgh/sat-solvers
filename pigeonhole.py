@@ -1,5 +1,5 @@
 class Pigeonhole:
-    def generate(n, m): #n pigeons, m holes
+    def generate(n, m, filename="pigeonholes"): #n pigeons, m holes
         clauses = []
         for i in range(1, n+1):
             clause = [f"{i}{j}" for j in range(1, m+1)] #pigeon i can go into hole j
@@ -13,11 +13,17 @@ class Pigeonhole:
 
         num_vars = n*m
         num_clauses = len(clauses)
-
-        with open(f"generated/{n}-pigeons_{m}-holes.cnf", "w") as f:
+        
+        with open(f"generated/{filename}_{n}-pigeons_{m}-holes.cnf", "w") as f:
             f.write(f"c generated pigeonhole with {n} pigeons and {m} holes \n")
             f.write(f"p cnf {num_vars} {num_clauses} \n")
             for clause in clauses:
                 f.write(" ".join(map(str, clause)) + " 0\n")
         
         print(f"CNF written to generated/{n}-pigeons_{m}-holes.cnf")
+
+for i in range(1, 100):
+    if i < 10:
+        Pigeonhole.generate(i,9, f"0{i}")
+    else:
+        Pigeonhole.generate(i,9, i)

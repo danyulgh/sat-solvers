@@ -103,9 +103,9 @@ class SATInstance:
         #run 2 sat if <=2 literals every clause
         if self.is_twosat(): return self.twosat()
         #assign pure literals so they're true
-        for pure in self.find_pures(): assignment[abs(pure)-1] = False if pure < 0 else True
+        for pure in self.find_pures(): assignment[self.variable_table[abs(pure)]] = False if pure < 0 else True
         #assign unit clauses to be true
-        for unit in self.find_units(): assignment[abs(unit)-1] = False if unit < 0 else True 
+        for unit in self.find_units(): assignment[self.variable_table[abs(unit)]] = False if unit < 0 else True 
         temp_clauses = self.clauses.copy()
         check = self.check(assignment)
         #check had a true or false, meaning there was a sat or unsat
