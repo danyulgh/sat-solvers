@@ -115,7 +115,7 @@ class SATInstance:
         #no simplification happened, return None
         return None
 
-    def most_frequent(self):
+    def frequent(self):
         counter = Counter()
         for clause in self.clauses:
             for literal in clause:
@@ -129,7 +129,7 @@ class SATInstance:
                 counter[abs(literal)] += 1
         return counter.most_common()[-1][0]
 
-    def most_spread(self):
+    def spread(self):
         counter = Counter()
         for clause in self.clauses:
             found = [False] * len(self.variables)
@@ -138,6 +138,22 @@ class SATInstance:
                 if found[assignment_key]: continue
                 counter[abs(literal)] += 1
                 found[assignment_key] = True
+        return counter.most_common()[0][0]
+
+    def moms(self):
+        min_size = min([len(clause) for clause in self.clauses])
+        counter = Counter()
+        for clause in self.clauses:
+            if len(clause) == min_size:
+                for literal in clause:
+                    counter[abs(literal)] += 1
+        return counter.most_common()[0][0]
+    
+    def jeroslow_wang(self):
+        counter = Counter()
+        for clause in self.clauses:
+            for literal in clause:
+                counter[abs(literal)] += 2 ** (-len(clause))
         return counter.most_common()[0][0]
     
     def solve(self, assignment, var_func):

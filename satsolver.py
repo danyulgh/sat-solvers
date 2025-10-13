@@ -35,12 +35,14 @@ import os
 #         end_time = time.perf_counter()
 #         print(f"{file.name}: \033[92m {end_time-start_time} \033[0m seconds for \033[91m {"SAT" if value else "UNSAT"} \033[0m via \033[94m {func.__name__} \033[0m")
 
-for test in os.listdir("generated"):
-    with open(f"generated/{test}", "r") as f:
-        print(f"picking via {test} with {SATInstance.most_frequent.__name__}")
+for test in os.listdir("generated/1"):
+    with open(f"generated/1/{test}", "r") as f:
+        print(f"picking via {test} with {SATInstance.frequent.__name__}")
         instance = SATInstance.instance_from_file(SATInstance, f)
         assignment = [None] * len(instance.variables)
         start_time = time.perf_counter()
-        value = instance.solve(assignment, SATInstance.most_frequent)
+        value = instance.solve(assignment, SATInstance.frequent)
+        print(len(instance.variables))
+        print(len(instance.clauses))
         end_time = time.perf_counter()
-        print(f"{f.name}: \033[92m {end_time-start_time} \033[0m seconds for \033[91m {"SAT" if value else "UNSAT"} \033[0m via \033[94m {SATInstance.most_frequent.__name__} \033[0m")
+        print(f"{f.name}: \033[92m {end_time-start_time} \033[0m seconds for \033[91m {"SAT" if value else "UNSAT"} \033[0m via \033[94m {SATInstance.frequent.__name__} \033[0m")
