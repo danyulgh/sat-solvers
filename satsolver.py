@@ -1,48 +1,29 @@
 from satinstance import SATInstance 
-import random
 import time 
 import os
+import csv
 
-# def print_assignment(z):
-#     for i, bool in enumerate(z):
-#         if bool == None: continue
-#         print(f"Literal {i+1} set to {bool}")
+heuristics = [SATInstance.frequent, SATInstance.moms, SATInstance.jeroslow_wang]
+test_dirs = [2, 3, 4]
 
-# def randomize_assignment(assignment):
-#     for i in range(random.randint(0, len(assignment)-1)):
-#         literal = random.randint(0, len(assignment)-1)
-#         while assignment[literal] != None:
-#             literal = random.randint(1, len(assignment)-1)
-#         assignment[literal] = random.choice([True, False])
-#     return assignment
-
-# directories = ["uf20-91", "uf50-218", "uuf50-218/UUF50.218.1000", "flat50-115"]
-
-# funcs  = [SATInstance.most_frequent, SATInstance.most_spread]
-# for i in range(30):
-#     # directory = random.choice(directories)
-#     directory = "generated"
-#     # test = random.choice(os.listdir(f"tests/{directory}"))
-#     test = random.choice(os.listdir(directory))
-#     func = random.choice(funcs)
-#     # with open(f"tests/{directory}/{test}", "r") as file:
-#     with open(f"{directory}/{test}", "r") as file:
-#         print(f"picking via {test} with {func.__name__}")
-#         instance = SATInstance.instance_from_file(SATInstance, file)
-#         assignment = [None] * len(instance.variables)
-#         start_time = time.perf_counter()
-#         value = instance.solve(assignment, func)
-#         end_time = time.perf_counter()
-#         print(f"{file.name}: \033[92m {end_time-start_time} \033[0m seconds for \033[91m {"SAT" if value else "UNSAT"} \033[0m via \033[94m {func.__name__} \033[0m")
-
-for test in os.listdir("generated/1"):
-    with open(f"generated/1/{test}", "r") as f:
-        print(f"picking via {test} with {SATInstance.frequent.__name__}")
-        instance = SATInstance.instance_from_file(SATInstance, f)
-        assignment = [None] * len(instance.variables)
-        start_time = time.perf_counter()
-        value = instance.solve(assignment, SATInstance.frequent)
-        print(len(instance.variables))
-        print(len(instance.clauses))
-        end_time = time.perf_counter()
-        print(f"{f.name}: \033[92m {end_time-start_time} \033[0m seconds for \033[91m {"SAT" if value else "UNSAT"} \033[0m via \033[94m {SATInstance.frequent.__name__} \033[0m")
+for test_dir in test_dirs: # for each category of tests
+    for heuristic in heuristics: # cycle thru heuristics
+        with open(f"results/minus/{test_dir}/{heuristic.__name__}.csv", "w", newline='') as f: # creates the csv file
+            writer = csv.writer(f)
+            writer.writerow(["n", "time", "variables", "clauses"])
+            f.close()
+        for test in os.listdir(f"generated/minus/{test_dir}"): # cycle thru test in the category
+            with open(f"generated/minus/{test_dir}/{test}", "r") as f: # open the test file
+                instance = SATInstance.instance_from_file(SATInstance, f)
+                print(f"test: {test}, heuristic: {heuristic.__name__}, clauses: {len(instance.clauses)}, variables: {len(instance.variables)}")
+                f.close()
+            assignment = [None] * len(instance.variables)
+            start_time = time.perf_counter()
+            instance.solve(assignment, heuristic)
+            end_time = time.perf_counter()
+            with open(f"results/minus/{test_dir}/{heuristic.__name__}.csv", "a", newline='') as f: # adds to the csv file
+                writer = csv.writer(f)
+                writer.writerow([int(test[:2]), end_time-start_time, len(instance.variables), len(instance.clauses)])
+                f.close()
+            if end_time - start_time > 100: # stop testing heursitic with the category if longer than 10 minutes
+                break
